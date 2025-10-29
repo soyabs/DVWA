@@ -1,1 +1,1 @@
-List of exploits of DVWA web appliction security testing application.
+List of exploits for the DVWA (Damn Vulnerable Web Application).

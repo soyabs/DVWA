@@ -1,0 +1,215 @@
+# DVWA – Stored Cross-Site Scripting (XSS)
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input is **stored directly in the database**
+* **No input validation**
+* **No output encoding**
+* `<script>` tags fully allowed
+* Payload executes for **every user** viewing the page
+
+---
+
+### Vulnerable Code Behavior (Conceptual)
+
+```php
+$name = $_POST['name'];
+$message = $_POST['message'];
+insert_into_db($name, $message);
+```
+
+---
+
+### Payload (PoC)
+
+```html
+<script>alert(1)</script>
+```
+
+*(Injected in **both Name and Message fields**)*
+
+---
+
+### Steps to Reproduce
+
+1. Navigate to **DVWA → XSS (Stored)**
+2. Enter payload in **Name** and **Message**
+3. Submit the form
+4. Reload or revisit the page
+
+---
+
+### Result
+
+* Payload stored in database
+* JavaScript executes automatically
+* Alert popup displayed on every page load
+
+
+---
+
+### Impact
+
+* Persistent session hijacking
+* Account takeover
+* Credential theft
+* Admin compromise
+* Defacement of application
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Basic filtering applied to `<script>` tag
+* **Blacklist-based filtering**
+* Application checks only **starting `<script>` tag**
+* Case-sensitive and pattern-based logic
+* Name field weakly filtered
+
+---
+
+### Filtering Behavior (Conceptual)
+
+```php
+if (strpos($name, "<script>") !== false) {
+    block();
+}
+```
+
+ Ineffective filtering approach
+
+---
+
+### Payloads (PoC)
+
+#### Script Tag Splitting
+
+```html
+<scr<script>ipt>alert('hi')</script>
+```
+
+---
+
+#### Case Variation
+
+```html
+<SCRIPT>alert('hi')</script>
+```
+
+---
+
+#### Mixed Case
+
+```html
+<Script>alert('hi')</script>
+```
+
+*(Injected in **Name field**)*
+
+---
+
+### Steps to Reproduce
+
+1. Navigate to **DVWA → XSS (Stored)**
+2. Enter payload in **Name field**
+3. Enter normal text in Message
+4. Submit form
+5. Refresh page
+
+---
+
+### Result
+
+* Filter bypass successful
+* Payload stored in database
+* JavaScript executes persistently
+
+
+---
+
+### Impact
+
+* Persistent XSS affecting all users
+* Admin and privileged user compromise
+* Long-term exploitation
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Still Vulnerable
+
+* `<script>` tags properly blocked
+* Stronger filtering applied
+* **HTML tags still accepted**
+* Event handlers not sanitized
+* Output encoding incomplete for HTML events
+
+---
+
+### Payloads (PoC)
+
+#### IMG onerror Payload
+
+```html
+<img src='' onerror='alert("hacked")'>
+```
+
+---
+
+#### SVG onload Payload
+
+```html
+<svg onload='alert("hacked")'>
+```
+
+*(Injected in **Name field**)*
+
+---
+
+### Steps to Reproduce
+
+1. Navigate to **DVWA → XSS (Stored)**
+2. Inject payload in **Name field**
+3. Submit form
+4. Reload the page
+
+---
+
+### Result
+
+* Script tags blocked
+* HTML event handlers executed
+* JavaScript runs automatically
+
+
+---
+
+### Impact
+
+* Persistent client-side compromise
+* Session hijacking
+* Phishing attacks
+* Stored payload affects all visitors
+
+---
+
+### Severity: **High**
+
+---

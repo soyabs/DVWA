@@ -1,0 +1,178 @@
+# DVWA – DOM-Based Cross-Site Scripting (XSS)
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input is taken directly from **URL fragment (`document.location.hash`)**
+* Written to the page using **unsafe DOM sinks**
+* **No input validation**
+* **No output encoding**
+* JavaScript executes entirely in the browser
+
+---
+
+### Vulnerable Code Behavior (Conceptual)
+
+```javascript
+var lang = document.location.hash;
+document.write(lang);
+```
+
+---
+
+### Payload (PoC)
+
+```html
+<script>alert(document.cookie)</script>
+```
+
+---
+
+### Full Exploit URL
+
+```
+http://127.0.0.1/dvwa/vulnerabilities/xss_d/?#<script>alert(document.cookie)</script>
+```
+
+---
+
+### Result
+
+* JavaScript executes immediately
+* Session cookie displayed in alert box
+* No server-side interaction required
+
+
+---
+
+### Impact
+
+* Session hijacking
+* Account takeover
+* Credential theft
+* Phishing attacks
+* Client-side malware injection
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Basic filtering applied to block `<script>` tags
+* **Blacklist-based filtering**
+* Dangerous DOM sinks still used
+* Event handlers and SVG contexts not filtered
+* Special characters like `<` and `>` still work
+
+---
+
+### Filtering Behavior (Conceptual)
+
+```javascript
+input = input.replace("<script>", "");
+```
+
+Ineffective against non-script payloads
+
+---
+
+### Payloads (PoC)
+
+#### IMG onerror Payload
+
+```html
+<img src='' onerror='alert("hacked")'>
+```
+
+---
+
+#### SVG onload Payload
+
+```html
+<svg onload='alert("hacked")'>
+```
+
+(URL-encoded version also works)
+
+```html
+<svg%20onload=%27alert("hacked")%27>
+```
+
+---
+
+### Full Exploit URL Example
+
+```
+http://127.0.0.1/dvwa/vulnerabilities/xss_d/?#<img src='' onerror='alert("hacked")'>
+```
+
+---
+
+### Result
+
+* JavaScript executes successfully
+* Filter bypass achieved
+* Alert popup shown
+
+
+---
+
+### Impact
+
+* Same impact as Low-level DOM XSS
+* Slightly higher exploitation effort
+* Client-side compromise still possible
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is More Secure
+
+* Uses **safe DOM APIs**
+* User input handled as **plain text**
+* Dangerous sinks removed
+* Proper output encoding applied
+
+---
+
+### Payload Attempt (PoC)
+
+```html
+default=#English<script>alert(document.cookie)</script>
+```
+
+(*Adding `#` before `<script>` and injecting at different positions*)
+
+---
+
+### Result
+
+ Payload rendered as plain text
+ No JavaScript execution
+ No alert popup
+
+---
+
+### Impact
+
+* DOM-based XSS **not exploitable**
+* Client-side execution successfully prevented
+
+---
+
+### Severity: **Low (Secure)**

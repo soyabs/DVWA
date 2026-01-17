@@ -1,0 +1,209 @@
+# DVWA – Reflected Cross-Site Scripting (XSS)
+
+**Security Levels:** Low | Medium | High
+
+---
+
+# 1️ XSS (Reflected)
+
+Reflected XSS occurs when **user input is sent to the server**, **reflected back in the HTTP response**, and **executed in the victim’s browser** without proper sanitization.
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input is **directly reflected** in HTTP response
+* **No input validation**
+* **No output encoding**
+* `<script>` tags allowed
+* JavaScript executes immediately
+
+---
+
+### Vulnerable Code Behavior (Conceptual)
+
+```php
+echo $_GET['name'];
+```
+
+---
+
+### Payload (PoC)
+
+```html
+<script>alert(1)</script>
+```
+
+---
+
+### Full Exploit URL
+
+```
+http://127.0.0.1/dvwa/vulnerabilities/xss_r/?name=<script>alert(1)</script>
+```
+
+---
+
+### Result
+
+* JavaScript executed in browser
+* Alert popup displayed instantly
+
+
+---
+
+### Impact
+
+* Session hijacking
+* Credential theft
+* Phishing attacks
+* Malicious redirect
+* Client-side malware execution
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Basic filtering applied for `<script>` tag
+* **Blacklist-based filtering**
+* Application checks only **starting `<script>` tag**
+* Case-sensitive and pattern-based filtering
+* HTML parsing bypass possible
+
+---
+
+### Filtering Behavior (Conceptual)
+
+```php
+if (strpos($input, "<script>") !== false) {
+    block();
+}
+```
+
+ Weak and bypassable logic
+
+---
+
+### Payloads (PoC)
+
+#### Script Tag Splitting
+
+```html
+<scr<script>ipt>alert('hi')</script>
+```
+
+---
+
+#### Case Variation
+
+```html
+<SCRIPT>alert('hi')</script>
+```
+
+---
+
+#### Mixed Case
+
+```html
+<Script>alert('hi')</script>
+```
+
+---
+
+### Full Exploit URL Example
+
+```
+http://127.0.0.1/dvwa/vulnerabilities/xss_r/?name=<scr<script>ipt>alert('hi')</script>
+```
+
+---
+
+### Result
+
+* Filter bypass successful
+* JavaScript executes
+* Alert popup displayed
+
+
+---
+
+### Impact
+
+* Same as Low-level reflected XSS
+* Slightly higher exploitation effort
+* Reliable bypass of weak filters
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Still Vulnerable
+
+* `<script>` tags blocked effectively
+* Stronger filtering on script tags
+* **HTML tags still allowed**
+* Event handlers not sanitized
+* Output encoding incomplete
+
+---
+
+### Payloads (PoC)
+
+#### IMG onerror Payload
+
+```html
+<img src='' onerror='alert("hacked")'>
+```
+
+---
+
+#### SVG onload Payload
+
+```html
+<svg onload='alert("hacked")'>
+```
+
+---
+
+### Full Exploit URL Example
+
+```
+http://127.0.0.1/dvwa/vulnerabilities/xss_r/?name=<img src='' onerror='alert("hacked")'>
+```
+
+---
+
+### Result
+
+* Script tags blocked
+* Event-based payloads executed
+* JavaScript runs successfully
+
+
+---
+
+### Impact
+
+* Client-side code execution
+* Session theft possible
+* Phishing and redirection attacks
+
+---
+
+### Severity: **High**
+
+*(Still exploitable due to HTML event handling)*
+
+---

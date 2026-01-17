@@ -1,0 +1,36 @@
+Reconnaissance Phase
+
+
+Target Information
+
+URL: http://127.0.0.1/dvwa/
+
+Server: Apache
+
+OS: Linux (Kali / Ubuntu)
+
+DVWA Security Level: Low / Medium / High
+
+
+
+1.2 Nmap Scan
+
+Command Used:
+
+nmap -sS -sV -A -p- 127.0.0.1
+
+
+Output (Sample):
+
+PORT     STATE SERVICE VERSION
+80/tcp   open  http    Apache httpd 2.4.41
+3306/tcp open  mysql   MySQL 5.7.33
+
+
+Findings:
+
+Web server running on port 80
+
+Database exposed internally (MySQL – 3306)
+
+No firewall detected (lab environment)

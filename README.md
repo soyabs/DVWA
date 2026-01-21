@@ -15,3 +15,4 @@ written in an **industry-level / bug bounty style**.
 - OWASP ZAP
 - SQLMap
 - Nmap
+- Hydra

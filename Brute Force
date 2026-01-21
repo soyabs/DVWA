@@ -1,0 +1,201 @@
+# Brute Force (Authentication)
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* No account lockout mechanism
+* No rate limiting
+* No CAPTCHA protection
+* Unlimited login attempts
+* Predictable error messages
+
+---
+
+### Payloads (PoC)
+
+#### Common Credentials
+
+```
+admin:admin
+admin:password
+admin:123456
+admin:dvwa
+```
+
+---
+
+### Brute Force Using Burp Suite
+
+* Intercept login request
+* Send to **Intruder**
+* Set payload on `password`
+* Load wordlist
+* Start attack
+
+---
+
+### Result
+
+* Valid credentials found
+* No blocking or delay
+* Login successful
+
+---
+
+### Impact
+
+* Unauthorized access
+* Admin account compromise
+* Complete application takeover
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* No account lockout
+* Artificial delay added
+* Still allows unlimited attempts
+* Automation still possible
+
+---
+
+### Code Behavior
+
+```php
+sleep(2);
+```
+
+---
+
+### Brute Force Using Burp Suite (Medium)
+
+* Reduce Intruder threads
+* Increase request delay
+* Smaller wordlist
+
+---
+
+### Result
+
+* Attack slowed
+* Brute force still successful
+* Credentials compromised
+
+---
+
+### Impact
+
+* Credential leakage
+* Unauthorized access
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level (CAPTCHA Bypass Using Session Handling)
+
+### Why it is Vulnerable
+
+* CAPTCHA is **session-based**
+<input type="hidden" name="user_token" value="f0a7e2d2e2fd86269581ea63fa7e9214"> - session is hiddden make it text type="text"
+* CAPTCHA refresh endpoint accessible
+* CAPTCHA value can be **automatically fetched**
+* No true server-side brute force protection
+* Logic flaw in session handling
+
+---
+
+### Vulnerable Authentication Flow
+
+1. CAPTCHA generated and stored in session
+2. CAPTCHA refresh request generates new value
+3. Server trusts CAPTCHA without attempt tracking
+4. No lockout after failures
+
+---
+
+## Brute Force Using **Burp Suite Macro & Session Handling**
+
+### Attack Concept
+
+> Automatically fetch a **new valid CAPTCHA** for every login attempt.
+
+---
+
+### Step-by-Step (PoC)
+
+1. Burp Suite → **Project Options → Sessions**
+2. Create **Session Handling Rule**
+3. Add **Macro**
+4. Record:
+
+   * CAPTCHA refresh request
+   * Login request
+5. Configure macro to:
+
+   * Extract CAPTCHA from response
+   * Inject into login request
+6. Send login request to **Intruder**
+7. Start brute force
+
+In grep - match we can add our own param incorrect => gives 0 if  true
+for this uncheck Make unmodified basline request first.
+---
+
+### Captured Requests
+
+#### CAPTCHA Refresh
+
+```http
+GET /dvwa/vulnerabilities/brute/captcha.php HTTP/1.1
+Host: 127.0.0.1
+Cookie: security=high; PHPSESSID=xxxx
+```
+
+---
+
+#### Login Request
+
+```http
+POST /dvwa/vulnerabilities/brute/ HTTP/1.1
+Host: 127.0.0.1
+Cookie: security=high; PHPSESSID=xxxx
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=§pass§&captcha=§captcha§&Login=Login
+```
+
+---
+
+### Result
+
+* CAPTCHA bypassed successfully
+* Burp Intruder continues attack
+* Valid credentials obtained
+* No account lockout triggered
+
+---
+
+### Impact
+
+* CAPTCHA protection defeated
+* Brute force attack successful
+* Admin account compromised
+
+---
+
+### Severity: **High**
+
+---

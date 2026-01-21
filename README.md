@@ -9,6 +9,7 @@ written in an **industry-level / bug bounty style**.
 - Brute Force
 - SQL injection
 - SQL injection (Blind)
+- Command Injection
 
 ## Tools Used
 - Burp Suite

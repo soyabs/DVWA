@@ -6,7 +6,7 @@ written in an **industry-level / bug bounty style**.
 ## Vulnerabilities Covered
 - SQL Injection (Classic & Blind)
 - XSS (Reflected, Stored, DOM)
-- CSRF
+- Brute Force
 - SQL injection
 - SQL injection (Blind)
 

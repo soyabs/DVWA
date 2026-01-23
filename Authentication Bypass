@@ -1,0 +1,285 @@
+# DVWA – Authentication Bypass
+**Security Levels:** Low | Medium | High
+
+---
+
+# 1. LOW Level – Weak Authentication Logic
+
+---
+
+## How Authentication Works (Low)
+
+At Low level, DVWA implements **very basic authentication logic** with minimal protection.
+
+Typical flow:
+
+1. User submits username & password
+2. Server checks credentials
+3. If match → session variable set
+4. User is considered authenticated
+
+There is **no hardening around sessions or login logic**.
+
+---
+
+## Why LOW Is Vulnerable
+
+* Weak authentication design
+* No rate limiting
+* No CSRF protection
+* No session regeneration after login
+* No protection against credential reuse
+* Application blindly trusts login success
+
+---
+
+## Vulnerable Logic (Conceptual)
+
+```php
+if ($username == $db_user && $password == $db_pass) {
+    $_SESSION['logged_in'] = true;
+}
+```
+
+Once `logged_in = true`, access is granted everywhere.
+
+---
+
+## Attack Scenario
+
+At Low level:
+
+* Credentials are often weak/default
+* Brute force or guessing works easily
+* Once logged in, session is fully trusted
+
+This makes **authentication trivial to bypass or abuse**.
+
+---
+
+## Result (Low)
+
+* Attacker gains access easily
+* No additional checks
+* No secondary verification
+
+---
+
+## Impact
+
+* Unauthorized access
+* Admin account compromise
+* Full application takeover
+
+---
+
+## Severity: **High**
+
+---
+
+# 2. MEDIUM Level – Session Fixation Vulnerability
+
+---
+
+## What MEDIUM Level Improves
+
+Compared to Low:
+
+* Better credential checking
+* Login logic is server-side
+* Weak passwords are harder to guess
+
+ However, **session handling is still broken**.
+
+---
+
+## Core Issue in MEDIUM
+
+> **Session ID is NOT regenerated after successful login**
+
+This opens the door to **Session Fixation**.
+
+---
+
+## How Authentication Works (Medium)
+
+1. User visits login page
+2. Server assigns a session ID:
+
+   ```
+   PHPSESSID=abc123
+   ```
+3. User logs in successfully
+4. Server sets:
+
+   ```php
+   $_SESSION['logged_in'] = true;
+   ```
+5. **Session ID remains the same**
+
+This is the vulnerability.
+
+---
+
+## What Is Session Fixation (Simple)
+
+Session Fixation means:
+
+* Attacker forces or predicts a session ID
+* Victim logs in using that same session
+* Attacker reuses the session to gain access
+
+---
+
+## Attack Scenario (MEDIUM)
+
+1. Attacker creates a session on DVWA:
+
+   ```
+   PHPSESSID=attacker123
+   ```
+
+2. Victim uses same browser / shared system / crafted link
+
+3. Victim logs in as admin
+
+4. DVWA does **NOT regenerate the session ID**
+
+5. Attacker uses:
+
+   ```http
+   Cookie: PHPSESSID=attacker123
+   ```
+
+ Attacker is now authenticated **without credentials**
+
+---
+
+## Why This Works
+
+* No `session_regenerate_id()` after login
+* Session not tied to IP or User-Agent
+* Server trusts session state blindly
+
+---
+
+## Result (Medium)
+
+* Login process bypassed
+* Attacker gains authenticated access
+* Credentials never needed
+
+---
+
+## Impact
+
+* Account takeover
+* Persistent unauthorized access
+* High real-world risk
+
+---
+
+## Severity: **Medium**
+
+---
+
+# 3. HIGH Level – Session Hijacking via Admin Session Reuse
+
+(**Your Key Observation**)
+
+---
+
+## What HIGH Level Tries to Fix
+
+High level introduces:
+
+* CAPTCHA on login
+* Better validation
+* Protection against brute force
+
+ **But authentication still relies entirely on session trust**
+
+---
+
+## Critical Truth About HIGH Level
+
+> **If an attacker obtains a valid admin session, authentication is completely bypassed.**
+
+CAPTCHA does **nothing** once a session exists.
+
+---
+
+## How Authentication Works (High)
+
+```php
+if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+    allow_access();
+}
+```
+
+There is **no revalidation** of:
+
+* who created the session
+* where it is being used
+* whether it was hijacked
+
+---
+
+## Attack Scenario – Admin Session Reuse
+
+### Preconditions
+
+Attacker obtains admin’s session ID via:
+
+* XSS
+* Shared system
+* Insecure cookies
+* Network sniffing (HTTP)
+* Local access
+
+---
+
+### Proof of Concept
+
+```http
+GET /dvwa/vulnerabilities/ HTTP/1.1
+Host: 127.0.0.1
+Cookie: PHPSESSID=ADMIN_SESSION_ID
+```
+
+---
+
+## Result (High)
+
+* Attacker is treated as admin
+* No login required
+* CAPTCHA completely bypassed
+* Full access granted
+
+---
+
+## Why CAPTCHA Fails Here
+
+CAPTCHA only protects:
+
+* login attempts
+
+It does NOT protect:
+
+* existing authenticated sessions
+
+Once the session is valid → **authentication is assumed complete**.
+
+---
+
+## Impact
+
+* Full authentication bypass
+* Privilege escalation
+* Persistent admin access
+
+---
+
+## Severity: **High**
+
+---

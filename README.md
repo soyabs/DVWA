@@ -10,6 +10,7 @@ written in an **industry-level / bug bounty style**.
 - SQL injection
 - SQL injection (Blind)
 - Command Injection
+- Authentication Bypass
 
 ## Tools Used
 - Burp Suite

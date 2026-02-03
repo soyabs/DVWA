@@ -1,0 +1,208 @@
+# JavaScript (DOM-Based XSS)
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input taken from URL
+* Data written directly to DOM
+* No input validation
+* No output encoding
+* JavaScript executes attacker input
+
+---
+
+### Vulnerable JavaScript Code
+
+```javascript
+document.write("Hello " + location.hash);
+```
+
+---
+
+### Payloads (PoC)
+
+#### DOM XSS Payload
+
+```
+#<script>alert(1)</script>
+```
+
+---
+
+#### Image Error Payload
+
+```
+#<img src=x onerror=alert(1)>
+```
+
+---
+
+### Exploitation Steps
+
+* Inject payload in URL fragment
+* JavaScript reads `location.hash`
+* Payload written to DOM
+* Script executed in browser
+
+---
+
+### Result
+
+* JavaScript executed successfully
+* No server-side logging
+* XSS triggered on client side
+
+---
+
+### Impact
+
+* Session hijacking
+* Credential theft
+* Full client-side compromise
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Basic input filtering applied
+* Blacklist-based protection
+* Easily bypassable
+* No proper DOM sanitization
+
+---
+
+### Vulnerable Code Behavior
+
+```javascript
+var input = location.hash.replace("<script>", "");
+document.write(input);
+```
+
+---
+
+### Payloads (PoC)
+
+#### Filter Bypass
+
+```
+#<ScRiPt>alert(1)</ScRiPt>
+```
+
+---
+
+#### Event Handler Bypass
+
+```
+#<svg/onload=alert(1)>
+```
+
+---
+
+### Exploitation Steps
+
+* Bypass blacklist filter
+* Inject alternative JavaScript payload
+* Browser executes code
+
+---
+
+### Result
+
+* DOM XSS still exploitable
+* Filter bypassed successfully
+
+---
+
+### Impact
+
+* Inadequate security control
+* Client-side attack persists
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Uses JavaScript-based validation
+* Relies on encoding only
+* Uses `innerHTML`
+* Logical flaw in DOM handling
+
+---
+
+### Vulnerable Logic
+
+```javascript
+document.getElementById("output").innerHTML = decodeURIComponent(location.hash);
+```
+
+---
+
+### Attack Concept
+
+> Abuse **HTML injection via DOM APIs** to execute JavaScript.
+
+---
+
+### Payloads (PoC)
+
+#### HTML Injection Payload
+
+```
+#<img src=x onerror=alert(document.cookie)>
+```
+
+---
+
+### Exploitation Steps
+
+* URL encode payload
+* JavaScript decodes input
+* Data injected into DOM
+* Script executed
+
+---
+
+### Result
+
+* DOM XSS triggered
+* Cookie accessible to attacker
+
+---
+
+### Impact
+
+* Account takeover
+* Data exfiltration
+* Complete client compromise
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* DOM XSS bypasses server-side security
+* JavaScript sinks are dangerous
+* Blacklists are ineffective
+* Client-side security often ignored
+
+---

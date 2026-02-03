@@ -1,0 +1,186 @@
+# Cryptography
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* Uses weak hashing algorithm
+* Passwords stored using MD5
+* No salting applied
+* Fast hash allows brute force
+* Easily crackable hashes
+
+---
+
+### Vulnerable Code
+
+```php
+$password = md5($_POST['password']);
+```
+
+---
+
+### Payloads (PoC)
+
+#### MD5 Hash Cracking
+
+```
+5f4dcc3b5aa765d61d8327deb882cf99
+```
+
+---
+
+### Exploitation Steps
+
+* Extract password hash
+* Use online/offline hash cracker
+* Recover plaintext password
+
+---
+
+### Result
+
+* Password cracked successfully
+* Plaintext credentials obtained
+
+---
+
+### Impact
+
+* Account compromise
+* Credential reuse attacks
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Uses SHA1 hashing
+* Salt is static and predictable
+* Still vulnerable to rainbow tables
+* No key stretching
+
+---
+
+### Code Behavior
+
+```php
+$password = sha1("static_salt" . $_POST['password']);
+```
+
+---
+
+### Payloads (PoC)
+
+#### Salted Hash Attack
+
+```
+sha1(static_salt + password)
+```
+
+---
+
+### Exploitation Steps
+
+* Identify static salt
+* Append salt to wordlist
+* Crack hash offline
+
+---
+
+### Result
+
+* Hash cracked
+* Password recovered
+
+---
+
+### Impact
+
+* Weak cryptographic protection
+* User credentials exposed
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Uses strong hashing algorithm
+* Uses bcrypt
+* Cost factor is low
+* No password pepper used
+
+---
+
+### Vulnerable Configuration
+
+```php
+password_hash($password, PASSWORD_BCRYPT, ['cost' => 4]);
+```
+
+---
+
+### Attack Concept
+
+> Exploit **low cost factor** to speed up brute-force attacks.
+
+---
+
+### Payloads (PoC)
+
+#### Offline Brute Force
+
+```
+$2y$04$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+---
+
+### Exploitation Steps
+
+* Obtain password hash
+* Use GPU-based cracking
+* Leverage low bcrypt cost
+
+---
+
+### Result
+
+* Password cracked faster than expected
+* Security weakened by configuration
+
+---
+
+### Impact
+
+* Increased risk of compromise
+* Defense weakened by misconfiguration
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* Weak hashing breaks authentication
+* Static salts provide false security
+* Low bcrypt cost reduces effectiveness
+* Cryptography misuse is critical
+
+---

@@ -1,0 +1,195 @@
+# API Security
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* No authentication on API endpoints
+* Direct access to sensitive APIs
+* No rate limiting
+* No authorization checks
+* Trusts client-side input
+
+---
+
+### Vulnerable API Behavior
+
+```http
+GET /dvwa/api/users HTTP/1.1
+Host: 127.0.0.1
+```
+
+---
+
+### Payloads (PoC)
+
+#### Direct API Access
+
+```
+/dvwa/api/users
+/dvwa/api/admin
+```
+
+---
+
+### Exploitation Steps
+
+* Identify API endpoint
+* Access endpoint without token
+* Server returns sensitive data
+
+---
+
+### Result
+
+* API data disclosed
+* No access control enforced
+
+---
+
+### Impact
+
+* Sensitive data exposure
+* User enumeration
+* Unauthorized access
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* API key implemented
+* API key is static
+* Key passed via URL or header
+* No rotation or expiry
+* Easily reusable key
+
+---
+
+### Vulnerable API Logic
+
+```http
+GET /dvwa/api/users HTTP/1.1
+X-API-Key: 12345
+```
+
+---
+
+### Payloads (PoC)
+
+#### API Key Reuse
+
+```
+X-API-Key: 12345
+```
+
+---
+
+### Exploitation Steps
+
+* Capture API key once
+* Replay key in requests
+* Server accepts request
+
+---
+
+### Result
+
+* API authentication bypassed
+* Data accessed successfully
+
+---
+
+### Impact
+
+* Broken authentication
+* Full API misuse
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Token-based authentication used
+* Token not scoped properly
+* No object-level authorization
+* IDOR present in API
+* Excessive data exposure
+
+---
+
+### Vulnerable API Logic
+
+```http
+GET /dvwa/api/user?id=2 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9
+```
+
+---
+
+### Attack Concept
+
+> Abuse **IDOR in APIs** by manipulating object identifiers.
+
+---
+
+### Payloads (PoC)
+
+#### API IDOR Attack
+
+```
+/dvwa/api/user?id=1
+/dvwa/api/user?id=2
+```
+
+---
+
+### Exploitation Steps
+
+* Authenticate as normal user
+* Modify object ID in API request
+* Access other user data
+
+---
+
+### Result
+
+* Unauthorized API data access
+* Authorization bypassed
+
+---
+
+### Impact
+
+* Privacy violation
+* Account takeover
+* Compliance failure
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* APIs lack visibility and controls
+* Broken auth is common in APIs
+* IDOR is highly impactful
+* APIs are prime attack targets
+
+---

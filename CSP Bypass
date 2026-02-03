@@ -1,0 +1,199 @@
+# Content Security Policy (CSP) Bypass
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* CSP allows `unsafe-inline`
+* No restriction on script execution
+* Inline JavaScript permitted
+* CSP header poorly configured
+* XSS payloads execute freely
+
+---
+
+### Vulnerable CSP Header
+
+```http
+Content-Security-Policy: script-src 'self' 'unsafe-inline'
+```
+
+---
+
+### Payloads (PoC)
+
+#### Inline Script Injection
+
+```html
+<script>alert(1)</script>
+```
+
+---
+
+#### Event Handler Injection
+
+```html
+<img src=x onerror=alert(1)>
+```
+
+---
+
+### Exploitation Steps
+
+* Inject inline JavaScript payload
+* Browser allows execution
+* CSP does not block script
+
+---
+
+### Result
+
+* JavaScript executed successfully
+* CSP protection bypassed
+
+---
+
+### Impact
+
+* Cross-Site Scripting (XSS)
+* Session hijacking
+* Credential theft
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* CSP uses nonce-based protection
+* Nonce value is static
+* Same nonce reused for all requests
+* Predictable nonce value
+
+---
+
+### Vulnerable CSP Header
+
+```http
+Content-Security-Policy: script-src 'self' 'nonce-abc123'
+```
+
+---
+
+### Payloads (PoC)
+
+#### Nonce Reuse Bypass
+
+```html
+<script nonce="abc123">alert(1)</script>
+```
+
+---
+
+### Exploitation Steps
+
+* View page source
+* Extract nonce value
+* Inject script using same nonce
+* Browser trusts script
+
+---
+
+### Result
+
+* CSP nonce bypassed
+* Malicious script executed
+
+---
+
+### Impact
+
+* XSS possible despite CSP
+* False sense of security
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* CSP uses hash-based protection
+* Allowed script hashes are static
+* Whitelisted trusted domains
+* JSONP endpoints allowed
+* No strict-dynamic directive
+
+---
+
+### Vulnerable CSP Header
+
+```http
+Content-Security-Policy: script-src 'self' https://trusted.cdn.com
+```
+
+---
+
+### Attack Concept
+
+> Abuse **trusted external domains** or **JSONP endpoints** to execute malicious JavaScript.
+
+---
+
+### Payloads (PoC)
+
+#### JSONP Callback Injection
+
+```html
+<script src="https://trusted.cdn.com/api?callback=alert"></script>
+```
+
+---
+
+### Exploitation Steps
+
+* Identify whitelisted domain
+* Find JSONP or dynamic JS endpoint
+* Inject malicious callback
+* Script executes in victim context
+
+---
+
+### Result
+
+* CSP bypass achieved
+* JavaScript execution successful
+
+---
+
+### Impact
+
+* CSP protection defeated
+* XSS attack successful
+* Full user compromise
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* Weak CSP allows XSS
+* Static nonces break CSP logic
+* Trusted domains increase attack surface
+* CSP misconfiguration is dangerous
+
+---

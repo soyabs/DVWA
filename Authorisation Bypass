@@ -1,0 +1,192 @@
+# Authorization Bypass
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* No role-based access control
+* Sensitive pages directly accessible
+* Authorization checks missing
+* Relies only on UI restrictions
+* Direct Object Reference possible
+
+---
+
+### Vulnerable Behavior
+
+```http
+GET /dvwa/admin.php HTTP/1.1
+Cookie: PHPSESSID=xxxx
+```
+
+---
+
+### Payloads (PoC)
+
+#### Direct URL Access
+
+```
+/dvwa/admin.php
+/dvwa/config.php
+```
+
+---
+
+### Exploitation Steps
+
+* Login as low-privileged user
+* Directly access admin endpoint
+* Server does not verify role
+
+---
+
+### Result
+
+* Admin page accessible
+* Privilege escalation achieved
+
+---
+
+### Impact
+
+* Unauthorized access
+* Admin functionality abuse
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Authorization implemented client-side
+* Role verified using hidden fields
+* Parameters can be modified
+* No server-side enforcement
+
+---
+
+### Vulnerable Logic
+
+```html
+<input type="hidden" name="role" value="user">
+```
+
+---
+
+### Payloads (PoC)
+
+#### Parameter Tampering
+
+```
+role=admin
+```
+
+---
+
+### Exploitation Steps
+
+* Intercept request in Burp Suite
+* Modify role parameter
+* Forward request to server
+
+---
+
+### Result
+
+* Authorization bypassed
+* Admin access granted
+
+---
+
+### Impact
+
+* Privilege escalation
+* Broken access control
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Server-side authorization implemented
+* Object-level access not validated
+* User ID trusted from request
+* IDOR vulnerability present
+
+---
+
+### Vulnerable Logic
+
+```php
+if ($_SESSION['role'] == 'user') {
+    view_profile($_GET['id']);
+}
+```
+
+---
+
+### Attack Concept
+
+> Access **unauthorized objects** by manipulating object identifiers.
+
+---
+
+### Payloads (PoC)
+
+#### IDOR Attack
+
+```
+/dvwa/profile.php?id=1
+/dvwa/profile.php?id=2
+```
+
+---
+
+### Exploitation Steps
+
+* Login as normal user
+* Change object ID in request
+* Access another user's data
+
+---
+
+### Result
+
+* Unauthorized data accessed
+* Authorization logic bypassed
+
+---
+
+### Impact
+
+* Data leakage
+* Account compromise
+* Privacy violation
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* Authorization failures are critical
+* Client-side checks are insecure
+* IDOR leads to data exposure
+* Full application compromise possible
+
+---

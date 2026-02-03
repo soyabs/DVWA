@@ -1,0 +1,194 @@
+# File Inclusion (LFI / RFI)
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* User input directly passed to `include()`
+* No input validation
+* No whitelist implementation
+* Directory traversal allowed
+* PHP wrappers enabled
+
+---
+
+### Vulnerable Code
+
+```php
+$page = $_GET['page'];
+```
+
+---
+
+### Payloads (PoC)
+
+#### Local File Inclusion (LFI)
+
+```
+?page=../../../../etc/passwd
+?page=../../../../windows/system32/drivers/etc/hosts
+?page=../../../../boot.ini
+```
+
+---
+
+#### PHP Wrapper Payload
+
+```
+?page=php://filter/convert.base64-encode/resource=index.php
+```
+
+---
+
+### Exploitation Steps
+
+* Identify vulnerable `page` parameter
+* Inject traversal payload
+* Server includes local file
+* File content returned in response
+
+---
+
+### Result
+
+* Sensitive system files disclosed
+* Application source code exposed
+
+---
+
+### Impact
+
+* Information disclosure
+* Credential leakage
+* Possible Remote Code Execution
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* Blacklist-based filtering used
+* Partial traversal blocking
+* No canonical path validation
+* PHP wrappers still allowed
+
+---
+
+### Code Behavior
+
+```php
+$file = $_GET[ 'page' ];
+
+// Input validation
+$file = str_replace( array( "http://", "https://" ), "", $file );
+$file = str_replace( array( "../", "..\\" ), "", $file );
+
+```
+
+---
+
+### Payloads (PoC)
+
+#### Traversal Bypass
+
+```
+?page=....//....//....//etc/passwd
+?page=..%2f..%2f..%2fetc%2fpasswd
+```
+
+---
+
+#### PHP Wrapper Bypass
+
+```
+?page=php://filter/convert.base64-encode/resource=index.php
+```
+
+---
+
+### Result
+
+* Filter bypass successful
+* LFI still exploitable
+
+---
+
+### Impact
+
+* Sensitive data exposure
+* Weak security control
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* Whitelist-based inclusion
+* Filename validation only
+* Logical flaw in path handling
+* PHP filters not blocked
+
+---
+
+### Vulnerable Logic
+
+```php
+$file = $_GET[ 'page' ];
+
+// Input validation
+if( !fnmatch( "file*", $file ) && $file != "include.php" ) {
+    // This isn't the page we want!
+    echo "ERROR: File not found!";
+    exit;
+} 
+```
+
+---
+
+### Attack Concept
+
+> Abuse PHP wrappers or trusted files to disclose source code
+
+---
+
+### Payloads (PoC)
+
+#### Source Code Disclosure
+
+```
+?page=php://filter/convert.base64-encode/resource=include.php
+```
+
+---
+
+### Result
+
+* Source code exposed
+* Security logic bypassed
+
+---
+
+### Impact
+
+* Business logic disclosure
+* Possible RCE if chained
+
+---
+
+### Severity: **High**
+
+---

